@@ -1,4 +1,4 @@
-// Página de listas de compras — histórico e lista ativa.
+// Página de listas — visão compacta + modal de detalhe.
 
 import { useState, useEffect, useRef } from 'react';
 import { colors, fontSize, spacing, radius } from '../theme';
@@ -16,12 +16,13 @@ import {
 } from '../database/queries';
 
 // ─────────────────────────────────────────────
-// Componente principal
+// Componente principal — relação de listas
 // ─────────────────────────────────────────────
 
 export default function ListPage() {
   const [listas, setListas] = useState([]);
   const [itensMap, setItensMap] = useState({});
+  const [listaSelecionada, setListaSelecionada] = useState(null);
   const [modalNova, setModalNova] = useState(false);
   const [nomeNova, setNomeNova] = useState('');
 
@@ -43,19 +44,25 @@ export default function ListPage() {
     recarregar();
   }
 
+  // Ao fechar o modal, atualiza a lista selecionada com dados frescos
+  function handleFecharModal() {
+    recarregar();
+    setListaSelecionada(null);
+  }
+
   const ativas = listas.filter((l) => l.status === 'ativa');
   const efetuadas = listas.filter((l) => l.status === 'efetuada');
 
   return (
     <div style={styles.container}>
 
-      {/* ── Cabeçalho da página ── */}
+      {/* ── Cabeçalho ── */}
       <div style={styles.pageHeader}>
         <h2 style={styles.pageTitulo}>Minhas Listas</h2>
         <button style={styles.botaoNova} onClick={() => setModalNova(true)}>+ Nova</button>
       </div>
 
-      {/* ── Conteúdo ── */}
+      {/* ── Relação de listas ── */}
       {listas.length === 0 ? (
         <div style={styles.telaVazia}>
           <span style={styles.emojiGrande}>🛒</span>
@@ -68,37 +75,45 @@ export default function ListPage() {
       ) : (
         <div style={styles.conteudo}>
 
-          {/* ── Listas ativas ── */}
           {ativas.length > 0 && (
             <>
               <p style={styles.secaoLabel}>Lista Ativa</p>
               {ativas.map((lista) => (
-                <ListaAtivaCard
+                <ListaCard
                   key={lista.id}
                   lista={lista}
                   itens={itensMap[lista.id] || []}
-                  onAtualizar={recarregar}
+                  onClick={() => setListaSelecionada(lista)}
                 />
               ))}
             </>
           )}
 
-          {/* ── Histórico ── */}
           {efetuadas.length > 0 && (
             <>
               <p style={styles.secaoLabel}>Histórico</p>
               {efetuadas.map((lista) => (
-                <ListaEfetuadaCard
+                <ListaCard
                   key={lista.id}
                   lista={lista}
                   itens={itensMap[lista.id] || []}
-                  onAtualizar={recarregar}
+                  onClick={() => setListaSelecionada(lista)}
                 />
               ))}
             </>
           )}
 
         </div>
+      )}
+
+      {/* ── Modal: detalhes da lista ── */}
+      {listaSelecionada && (
+        <ListaModal
+          lista={listaSelecionada}
+          itens={itensMap[listaSelecionada.id] || []}
+          onFechar={handleFecharModal}
+          onAtualizar={recarregar}
+        />
       )}
 
       {/* ── Modal: nova lista ── */}
@@ -119,10 +134,63 @@ export default function ListPage() {
 }
 
 // ─────────────────────────────────────────────
-// Card: lista ativa (com checklist e formulário)
+// Card compacto na relação
 // ─────────────────────────────────────────────
 
-function ListaAtivaCard({ lista, itens, onAtualizar }) {
+function ListaCard({ lista, itens, onClick }) {
+  const isAtiva = lista.status === 'ativa';
+  const marcados = itens.filter((i) => i.checked === 1).length;
+  const total = itens.length;
+  const progresso = total > 0 ? (marcados / total) * 100 : 0;
+  const dataReferencia = lista.completed_at || lista.created_at;
+  const dataFormatada = new Date(dataReferencia).toLocaleDateString('pt-BR');
+
+  return (
+    <button style={styles.card} onClick={onClick}>
+
+      {/* Linha de topo: badge + data (efetuadas) */}
+      <div style={styles.cardTopo}>
+        <span style={isAtiva ? styles.badgeAtiva : styles.badgeEfetuada}>
+          {isAtiva ? '🟢 Ativa' : '✅ Efetuada'}
+        </span>
+        {!isAtiva && <span style={styles.dataTexto}>{dataFormatada}</span>}
+      </div>
+
+      {/* Nome */}
+      <p style={{
+        ...styles.cardNome,
+        color: isAtiva ? colors.textPrimary : colors.textSecondary,
+      }}>
+        {lista.name}
+      </p>
+
+      {/* Progresso (ativa) ou contagem (efetuada) */}
+      {isAtiva ? (
+        <>
+          <p style={styles.cardProgresso}>
+            {total === 0 ? 'Lista vazia' : `${marcados} de ${total} itens marcados`}
+          </p>
+          {total > 0 && (
+            <div style={styles.barraFundo}>
+              <div style={{ ...styles.barraProgresso, width: `${progresso}%` }} />
+            </div>
+          )}
+        </>
+      ) : (
+        <p style={styles.cardProgresso}>
+          {total} {total === 1 ? 'item' : 'itens'}
+        </p>
+      )}
+
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Modal fullscreen: detalhes e edição da lista
+// ─────────────────────────────────────────────
+
+function ListaModal({ lista, itens, onFechar, onAtualizar }) {
   const [novoItem, setNovoItem] = useState('');
   const [quantidade, setQuantidade] = useState('');
   const [unidade, setUnidade] = useState('');
@@ -132,6 +200,7 @@ function ListaAtivaCard({ lista, itens, onAtualizar }) {
   const [nomeDuplicar, setNomeDuplicar] = useState(`Cópia de ${lista.name}`);
   const inputRef = useRef(null);
 
+  const isAtiva = lista.status === 'ativa';
   const marcados = itens.filter((i) => i.checked === 1).length;
   const total = itens.length;
   const progresso = total > 0 ? (marcados / total) * 100 : 0;
@@ -155,231 +224,190 @@ function ListaAtivaCard({ lista, itens, onAtualizar }) {
     onAtualizar();
   }
 
-  function handleDuplicar() {
-    duplicarLista(lista.id, nomeDuplicar.trim() || `Cópia de ${lista.name}`);
-    setModalDuplicar(false);
+  function handleEfetuar() {
+    salvarLista(lista.id);
     onAtualizar();
+    onFechar();
   }
 
-  return (
-    <div style={styles.card}>
-
-      {/* Badge de status */}
-      <span style={styles.badgeAtiva}>🟢 Lista Ativa</span>
-
-      {/* Nome da lista (com edição inline) */}
-      {editandoNome ? (
-        <div style={styles.editarNomeRow}>
-          <input
-            style={styles.inputNome}
-            value={novoNome}
-            onChange={(e) => setNovoNome(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleRenomear()}
-            autoFocus
-          />
-          <button style={styles.botaoIcone} onClick={handleRenomear}>✓</button>
-          <button style={styles.botaoIcone} onClick={() => { setEditandoNome(false); setNovoNome(lista.name); }}>✕</button>
-        </div>
-      ) : (
-        <div style={styles.nomeRow}>
-          <h3 style={styles.nomeLista}>{lista.name}</h3>
-          <button style={styles.botaoEditar} onClick={() => setEditandoNome(true)}>✏️</button>
-        </div>
-      )}
-
-      {/* Progresso */}
-      <p style={styles.textoProgresso}>
-        {total === 0
-          ? 'Lista vazia'
-          : `${marcados} de ${total} ${total === 1 ? 'item marcado' : 'itens marcados'}`}
-      </p>
-      {total > 0 && (
-        <div style={styles.barraFundo}>
-          <div style={{ ...styles.barraProgresso, width: `${progresso}%` }} />
-        </div>
-      )}
-
-      {/* Botões de ação */}
-      <div style={styles.acoesRow}>
-        <button style={styles.botaoSalvar} onClick={() => { salvarLista(lista.id); onAtualizar(); }}>
-          ✅ Salvar lista
-        </button>
-        <button style={styles.botaoSecundario} onClick={() => setModalDuplicar(true)}>
-          📋 Duplicar
-        </button>
-      </div>
-
-      <div style={styles.divisor} />
-
-      {/* Checklist */}
-      {itens.length === 0 ? (
-        <p style={styles.listaVaziaTexto}>Adicione o primeiro item abaixo.</p>
-      ) : (
-        itens.map((item) => {
-          const marcado = item.checked === 1;
-          return (
-            <div key={item.id} style={styles.itemRow}>
-              <button
-                style={{
-                  ...styles.checkbox,
-                  backgroundColor: marcado ? colors.primary : colors.surface,
-                  borderColor: marcado ? colors.primary : colors.border,
-                }}
-                onClick={() => { marcarItem(item.id, !marcado); onAtualizar(); }}
-              >
-                {marcado && <span style={styles.checkmark}>✓</span>}
-              </button>
-              <span style={{
-                ...styles.itemNome,
-                color: marcado ? colors.textMuted : colors.textPrimary,
-                textDecoration: marcado ? 'line-through' : 'none',
-              }}>
-                {item.name}
-                {item.quantity && (
-                  <span style={styles.itemQtd}>
-                    {' '}· {item.quantity}{item.unit ? ` ${item.unit}` : ''}
-                  </span>
-                )}
-              </span>
-              <button style={styles.botaoDeletar} onClick={() => { deletarItem(item.id); onAtualizar(); }}>
-                ×
-              </button>
-            </div>
-          );
-        })
-      )}
-
-      {/* Formulário de adicionar item */}
-      <div style={styles.inputArea}>
-        <input
-          ref={inputRef}
-          style={styles.input}
-          placeholder="Nome do item..."
-          value={novoItem}
-          onChange={(e) => setNovoItem(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
-        />
-        <div style={styles.inputLinha2}>
-          <input
-            style={styles.inputQtd}
-            placeholder="Qtd"
-            type="number"
-            min="0"
-            value={quantidade}
-            onChange={(e) => setQuantidade(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
-          />
-          <input
-            style={styles.inputUnidade}
-            placeholder="Unidade"
-            value={unidade}
-            onChange={(e) => setUnidade(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
-          />
-          <button
-            style={{ ...styles.botaoAdicionar, opacity: novoItem.trim() ? 1 : 0.4 }}
-            onClick={handleAdicionar}
-            disabled={!novoItem.trim()}
-          >
-            +
-          </button>
-        </div>
-      </div>
-
-      {/* Modal duplicar */}
-      {modalDuplicar && (
-        <ModalTexto
-          titulo="Duplicar lista"
-          placeholder="Nome da nova lista"
-          valor={nomeDuplicar}
-          onChange={setNomeDuplicar}
-          textoBotao="Duplicar"
-          onConfirmar={handleDuplicar}
-          onCancelar={() => setModalDuplicar(false)}
-        />
-      )}
-
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// Card: lista efetuada (colapsável)
-// ─────────────────────────────────────────────
-
-function ListaEfetuadaCard({ lista, itens, onAtualizar }) {
-  const [expandida, setExpandida] = useState(false);
-  const [modalDuplicar, setModalDuplicar] = useState(false);
-  const [nomeDuplicar, setNomeDuplicar] = useState(`Cópia de ${lista.name}`);
-
-  const total = itens.length;
-  const dataReferencia = lista.completed_at || lista.created_at;
-  const dataFormatada = new Date(dataReferencia).toLocaleDateString('pt-BR');
+  function handleReativar() {
+    ativarLista(lista.id);
+    onAtualizar();
+    onFechar();
+  }
 
   function handleDuplicar() {
     duplicarLista(lista.id, nomeDuplicar.trim() || `Cópia de ${lista.name}`);
     setModalDuplicar(false);
     onAtualizar();
+    onFechar();
   }
 
   return (
-    <div style={{ ...styles.card, ...styles.cardEfetuada }}>
+    <div style={styles.modalTela}>
 
-      {/* Badge de status */}
-      <span style={styles.badgeEfetuada}>✅ Lista Efetuada</span>
+      {/* ── Cabeçalho do modal ── */}
+      <div style={styles.modalHeader}>
+        <button style={styles.botaoFechar} onClick={onFechar}>✕</button>
 
-      {/* Nome e data */}
-      <div style={styles.nomeRow}>
-        <h3 style={{ ...styles.nomeLista, color: colors.textSecondary }}>{lista.name}</h3>
-        <span style={styles.dataTexto}>{dataFormatada}</span>
-      </div>
-
-      <p style={styles.textoProgresso}>
-        {total} {total === 1 ? 'item' : 'itens'}
-      </p>
-
-      {/* Ações */}
-      <div style={styles.acoesRow}>
-        <button style={styles.botaoSalvar} onClick={() => setModalDuplicar(true)}>
-          📋 Duplicar
-        </button>
-        <button style={styles.botaoSecundario} onClick={() => { ativarLista(lista.id); onAtualizar(); }}>
-          ↩️ Reativar
-        </button>
-        {total > 0 && (
-          <button style={styles.botaoExpandir} onClick={() => setExpandida(!expandida)}>
-            {expandida ? '▲' : '▼'} Itens
-          </button>
+        {editandoNome ? (
+          <div style={styles.editarNomeRow}>
+            <input
+              style={styles.inputNome}
+              value={novoNome}
+              onChange={(e) => setNovoNome(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleRenomear()}
+              autoFocus
+            />
+            <button style={styles.botaoIcone} onClick={handleRenomear}>✓</button>
+            <button style={styles.botaoIcone} onClick={() => { setEditandoNome(false); setNovoNome(lista.name); }}>✕</button>
+          </div>
+        ) : (
+          <div style={styles.modalNomeRow}>
+            <h3 style={styles.modalNome}>{lista.name}</h3>
+            {isAtiva && (
+              <button style={styles.botaoEditar} onClick={() => setEditandoNome(true)}>✏️</button>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Itens expandidos (somente leitura) */}
-      {expandida && (
-        <>
-          <div style={styles.divisor} />
-          {itens.map((item) => (
-            <div key={item.id} style={{ ...styles.itemRow, opacity: 0.65 }}>
-              <span style={styles.checkboxLeitura}>
-                {item.checked ? '✓' : '○'}
-              </span>
-              <span style={{
-                ...styles.itemNome,
-                color: colors.textSecondary,
-                textDecoration: item.checked ? 'line-through' : 'none',
-              }}>
-                {item.name}
-                {item.quantity && (
-                  <span style={styles.itemQtd}>
-                    {' '}· {item.quantity}{item.unit ? ` ${item.unit}` : ''}
-                  </span>
-                )}
-              </span>
-            </div>
-          ))}
-        </>
-      )}
+      {/* ── Subtítulo com status e progresso ── */}
+      <div style={styles.modalSubheader}>
+        <span style={isAtiva ? styles.badgeAtiva : styles.badgeEfetuada}>
+          {isAtiva ? '🟢 Lista Ativa' : '✅ Lista Efetuada'}
+        </span>
+        <p style={styles.textoProgresso}>
+          {total === 0
+            ? 'Lista vazia'
+            : `${marcados} de ${total} ${total === 1 ? 'item marcado' : 'itens marcados'}`}
+        </p>
+        {total > 0 && (
+          <div style={styles.barraFundo}>
+            <div style={{ ...styles.barraProgresso, width: `${progresso}%` }} />
+          </div>
+        )}
+      </div>
 
-      {/* Modal duplicar */}
+      {/* ── Lista de itens (rolável) ── */}
+      <div style={styles.modalLista}>
+        {itens.length === 0 ? (
+          <p style={styles.listaVaziaTexto}>
+            {isAtiva ? 'Adicione o primeiro item abaixo.' : 'Esta lista está vazia.'}
+          </p>
+        ) : (
+          itens.map((item) => {
+            const marcado = item.checked === 1;
+            return (
+              <div key={item.id} style={styles.itemRow}>
+                {isAtiva ? (
+                  <button
+                    style={{
+                      ...styles.checkbox,
+                      backgroundColor: marcado ? colors.primary : colors.surface,
+                      borderColor: marcado ? colors.primary : colors.border,
+                    }}
+                    onClick={() => { marcarItem(item.id, !marcado); onAtualizar(); }}
+                  >
+                    {marcado && <span style={styles.checkmark}>✓</span>}
+                  </button>
+                ) : (
+                  <span style={styles.checkboxLeitura}>{marcado ? '✓' : '○'}</span>
+                )}
+
+                <span style={{
+                  ...styles.itemNome,
+                  color: marcado ? colors.textMuted : colors.textPrimary,
+                  textDecoration: marcado ? 'line-through' : 'none',
+                }}>
+                  {item.name}
+                  {item.quantity && (
+                    <span style={styles.itemQtd}>
+                      {' '}· {item.quantity}{item.unit ? ` ${item.unit}` : ''}
+                    </span>
+                  )}
+                </span>
+
+                {isAtiva && (
+                  <button style={styles.botaoDeletar} onClick={() => { deletarItem(item.id); onAtualizar(); }}>
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          })
+        )}
+
+        {/* Formulário para adicionar item (somente em listas ativas) */}
+        {isAtiva && (
+          <div style={styles.inputArea}>
+            <input
+              ref={inputRef}
+              style={styles.input}
+              placeholder="Nome do item..."
+              value={novoItem}
+              onChange={(e) => setNovoItem(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
+            />
+            <div style={styles.inputLinha2}>
+              <input
+                style={styles.inputQtd}
+                placeholder="Qtd"
+                type="number"
+                min="0"
+                value={quantidade}
+                onChange={(e) => setQuantidade(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
+              />
+              <input
+                style={styles.inputUnidade}
+                placeholder="Unidade"
+                value={unidade}
+                onChange={(e) => setUnidade(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
+              />
+              <button
+                style={{ ...styles.botaoAdicionar, opacity: novoItem.trim() ? 1 : 0.4 }}
+                onClick={handleAdicionar}
+                disabled={!novoItem.trim()}
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Rodapé com botões de ação ── */}
+      <div style={styles.modalRodape}>
+        {isAtiva ? (
+          <>
+            <button style={styles.botaoEfetuar} onClick={handleEfetuar}>
+              ✅ Efetuar
+            </button>
+            <button style={styles.botaoRodapeSecundario} onClick={() => setModalDuplicar(true)}>
+              📋 Duplicar
+            </button>
+            <button style={styles.botaoSalvar} onClick={onFechar}>
+              Salvar
+            </button>
+          </>
+        ) : (
+          <>
+            <button style={styles.botaoRodapeSecundario} onClick={handleReativar}>
+              ↩️ Reativar
+            </button>
+            <button style={styles.botaoRodapeSecundario} onClick={() => setModalDuplicar(true)}>
+              📋 Duplicar
+            </button>
+            <button style={styles.botaoSalvar} onClick={onFechar}>
+              Fechar
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Modal de duplicar (sobreposto) */}
       {modalDuplicar && (
         <ModalTexto
           titulo="Duplicar lista"
@@ -397,13 +425,13 @@ function ListaEfetuadaCard({ lista, itens, onAtualizar }) {
 }
 
 // ─────────────────────────────────────────────
-// Modal reutilizável com campo de texto
+// Modal de texto reutilizável (criar / duplicar)
 // ─────────────────────────────────────────────
 
 function ModalTexto({ titulo, placeholder, valor, onChange, textoBotao, onConfirmar, onCancelar }) {
   return (
     <div style={styles.overlay} onClick={onCancelar}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div style={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
         <h2 style={styles.modalTitulo}>{titulo}</h2>
         <input
           style={styles.inputModal}
@@ -413,7 +441,7 @@ function ModalTexto({ titulo, placeholder, valor, onChange, textoBotao, onConfir
           onKeyDown={(e) => e.key === 'Enter' && onConfirmar()}
           autoFocus
         />
-        <div style={styles.modalBotoes}>
+        <div style={styles.sheetBotoes}>
           <button style={styles.botaoCancelar} onClick={onCancelar}>Cancelar</button>
           <button
             style={{ ...styles.botaoPrimario, opacity: valor.trim() ? 1 : 0.5 }}
@@ -480,24 +508,44 @@ const styles = {
     color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
-    margin: `${spacing.md} 0 ${spacing.sm}`,
+    margin: `${spacing.md} 0 ${spacing.xs}`,
   },
 
-  // ── Cards ──
+  // ── Card compacto ──
   card: {
+    width: '100%',
+    textAlign: 'left',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.xl,
+    border: 'none',
+    cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     gap: spacing.sm,
     boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
   },
-  cardEfetuada: {
-    backgroundColor: colors.borderMuted,
+  cardTopo: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardNome: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    margin: 0,
+  },
+  cardProgresso: {
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
+    margin: 0,
+  },
+  dataTexto: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
 
-  // ── Badges de status ──
+  // ── Badges ──
   badgeAtiva: {
     fontSize: fontSize.xs,
     fontWeight: '600',
@@ -505,7 +553,6 @@ const styles = {
     backgroundColor: colors.primaryPastel,
     borderRadius: radius.full,
     padding: `2px ${spacing.sm}`,
-    alignSelf: 'flex-start',
   },
   badgeEfetuada: {
     fontSize: fontSize.xs,
@@ -514,17 +561,58 @@ const styles = {
     backgroundColor: colors.border,
     borderRadius: radius.full,
     padding: `2px ${spacing.sm}`,
-    alignSelf: 'flex-start',
   },
 
-  // ── Nome da lista ──
-  nomeRow: {
+  // ── Barra de progresso ──
+  barraFundo: {
+    width: '100%',
+    height: '6px',
+    backgroundColor: colors.borderMuted,
+    borderRadius: radius.full,
+    overflow: 'hidden',
+  },
+  barraProgresso: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    transition: 'width 0.3s ease',
+  },
+
+  // ── Modal fullscreen ──
+  modalTela: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 50,
+    backgroundColor: colors.background,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  modalHeader: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
+    gap: spacing.md,
+    padding: `${spacing.md} ${spacing.xl}`,
+    backgroundColor: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
+    minHeight: '60px',
   },
-  nomeLista: {
+  botaoFechar: {
+    background: 'none',
+    border: 'none',
+    fontSize: '20px',
+    cursor: 'pointer',
+    color: colors.textSecondary,
+    padding: spacing.xs,
+    lineHeight: 1,
+    flexShrink: 0,
+  },
+  modalNomeRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  modalNome: {
     fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.textPrimary,
@@ -539,16 +627,11 @@ const styles = {
     padding: spacing.xs,
     lineHeight: 1,
   },
-  dataTexto: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-
-  // ── Edição inline do nome ──
   editarNomeRow: {
     display: 'flex',
     gap: spacing.sm,
     alignItems: 'center',
+    flex: 1,
   },
   inputNome: {
     flex: 1,
@@ -573,85 +656,38 @@ const styles = {
     justifyContent: 'center',
     flexShrink: 0,
   },
-
-  // ── Progresso ──
+  modalSubheader: {
+    padding: `${spacing.md} ${spacing.xl}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+    borderBottom: `1px solid ${colors.border}`,
+  },
   textoProgresso: {
     fontSize: fontSize.base,
     color: colors.textSecondary,
     margin: 0,
   },
-  barraFundo: {
-    width: '100%',
-    height: '6px',
-    backgroundColor: colors.borderMuted,
-    borderRadius: radius.full,
-    overflow: 'hidden',
-  },
-  barraProgresso: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: radius.full,
-    transition: 'width 0.3s ease',
-  },
 
-  // ── Botões de ação ──
-  acoesRow: {
-    display: 'flex',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
+  // ── Lista de itens no modal ──
+  modalLista: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: `${spacing.sm} ${spacing.xl}`,
   },
-  botaoSalvar: {
-    backgroundColor: colors.primaryPastel,
-    color: colors.primary,
-    border: 'none',
-    borderRadius: radius.full,
-    padding: `${spacing.sm} ${spacing.md}`,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  botaoSecundario: {
-    backgroundColor: colors.borderMuted,
-    color: colors.textSecondary,
-    border: 'none',
-    borderRadius: radius.full,
-    padding: `${spacing.sm} ${spacing.md}`,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  botaoExpandir: {
-    background: 'none',
-    border: `1px solid ${colors.border}`,
-    borderRadius: radius.full,
-    padding: `${spacing.sm} ${spacing.md}`,
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    cursor: 'pointer',
-  },
-
-  // ── Divisor ──
-  divisor: {
-    borderTop: `1px solid ${colors.borderMuted}`,
-    margin: `${spacing.xs} 0`,
-  },
-
-  // ── Texto lista vazia ──
   listaVaziaTexto: {
     fontSize: fontSize.base,
     color: colors.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
-    padding: `${spacing.md} 0`,
+    padding: `${spacing['2xl']} 0`,
     margin: 0,
   },
-
-  // ── Itens do checklist ──
   itemRow: {
     display: 'flex',
     alignItems: 'center',
     gap: spacing.md,
-    padding: `${spacing.sm} 0`,
+    padding: `${spacing.md} 0`,
     borderBottom: `1px solid ${colors.borderMuted}`,
   },
   checkbox: {
@@ -709,7 +745,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: spacing.sm,
-    marginTop: spacing.sm,
+    marginTop: spacing.lg,
     paddingTop: spacing.md,
     borderTop: `1px solid ${colors.borderMuted}`,
   },
@@ -720,7 +756,7 @@ const styles = {
     padding: `${spacing.md} ${spacing.lg}`,
     fontSize: fontSize.md,
     color: colors.textPrimary,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     outline: 'none',
     boxSizing: 'border-box',
   },
@@ -737,7 +773,7 @@ const styles = {
     padding: `${spacing.md} ${spacing.lg}`,
     fontSize: fontSize.md,
     color: colors.textPrimary,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     outline: 'none',
     textAlign: 'center',
   },
@@ -748,7 +784,7 @@ const styles = {
     padding: `${spacing.md} ${spacing.lg}`,
     fontSize: fontSize.md,
     color: colors.textPrimary,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     outline: 'none',
   },
   botaoAdicionar: {
@@ -769,7 +805,49 @@ const styles = {
     transition: 'opacity 0.15s',
   },
 
-  // ── Modal ──
+  // ── Rodapé do modal ──
+  modalRodape: {
+    display: 'flex',
+    gap: spacing.sm,
+    padding: `${spacing.md} ${spacing.xl} ${spacing['2xl']}`,
+    backgroundColor: colors.surface,
+    borderTop: `1px solid ${colors.border}`,
+  },
+  botaoEfetuar: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: spacing.md,
+    fontSize: fontSize.base,
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  botaoRodapeSecundario: {
+    flex: 1,
+    backgroundColor: colors.borderMuted,
+    color: colors.textSecondary,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: spacing.md,
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  botaoSalvar: {
+    flex: 1,
+    backgroundColor: colors.primaryPastel,
+    color: colors.primary,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: spacing.md,
+    fontSize: fontSize.base,
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+
+  // ── Sheet modal (criar / duplicar) ──
   overlay: {
     position: 'fixed',
     inset: 0,
@@ -778,7 +856,7 @@ const styles = {
     alignItems: 'flex-end',
     zIndex: 100,
   },
-  modal: {
+  sheetModal: {
     backgroundColor: colors.surface,
     borderRadius: `${radius.xl} ${radius.xl} 0 0`,
     padding: spacing['2xl'],
@@ -805,7 +883,7 @@ const styles = {
     width: '100%',
     boxSizing: 'border-box',
   },
-  modalBotoes: {
+  sheetBotoes: {
     display: 'flex',
     gap: spacing.md,
     paddingBottom: spacing.lg,
