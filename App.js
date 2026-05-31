@@ -37,7 +37,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="dark" backgroundColor={colors.background} />
+      <StatusBar style="dark" />
       <Navigation />
     </>
   );

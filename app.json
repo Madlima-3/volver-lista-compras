@@ -12,6 +12,11 @@
       "adaptiveIcon": {
         "backgroundColor": "#0F6E56"
       }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Volver"
     }
   }
 }
