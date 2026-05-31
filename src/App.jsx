@@ -4,6 +4,7 @@ import HomePage    from './pages/HomePage';
 import RecipesPage from './pages/RecipesPage';
 import ListPage    from './pages/ListPage';
 import ProfilePage from './pages/ProfilePage';
+import MarketPage  from './pages/MarketPage';
 
 export default function App() {
   return (
@@ -15,6 +16,8 @@ export default function App() {
           <Route path="lista"      element={<ListPage />} />
           <Route path="perfil"     element={<ProfilePage />} />
         </Route>
+        {/* Rota fora do Layout — sem barra de navegação inferior */}
+        <Route path="lista/:id/mercado" element={<MarketPage />} />
       </Routes>
     </BrowserRouter>
   );

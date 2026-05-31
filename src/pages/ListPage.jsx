@@ -1,6 +1,7 @@
 // Página de listas — visão compacta + modal de detalhe.
 
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { colors, fontSize, spacing, radius } from '../theme';
 import {
   buscarListas,
@@ -195,6 +196,7 @@ function ListaCard({ lista, itens, onClick }) {
 // ─────────────────────────────────────────────
 
 function ListaModal({ lista, itens, onFechar, onAtualizar }) {
+  const navigate = useNavigate();
   const [novoItem, setNovoItem] = useState('');
   const [quantidade, setQuantidade] = useState('');
   const [unidade, setUnidade] = useState('');
@@ -421,6 +423,12 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
       <div style={styles.modalRodape}>
         {isAtiva ? (
           <>
+            <button
+              style={styles.botaoMercado}
+              onClick={() => { onFechar(); navigate(`/lista/${lista.id}/mercado`); }}
+            >
+              🛒 Ir ao mercado
+            </button>
             <button style={styles.botaoEfetuar} onClick={handleEfetuar}>
               ✅ Efetuar
             </button>
@@ -924,6 +932,17 @@ const styles = {
     padding: `${spacing.md} ${spacing.xl} ${spacing['2xl']}`,
     backgroundColor: colors.surface,
     borderTop: `1px solid ${colors.border}`,
+  },
+  botaoMercado: {
+    flex: 1,
+    backgroundColor: colors.amberPastel,
+    color: colors.amber,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: spacing.md,
+    fontSize: fontSize.base,
+    fontWeight: '700',
+    cursor: 'pointer',
   },
   botaoEfetuar: {
     flex: 1,
