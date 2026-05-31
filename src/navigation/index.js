@@ -1,10 +1,10 @@
 // Configura toda a navegação do app.
 // Tab Navigator = barra de abas na parte de baixo.
-// Stack Navigator = navegação em pilha (abre telas sobre outras telas).
+// Native Stack Navigator = navegação em pilha usando componentes nativos do sistema.
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text } from 'react-native';
 
 import HomeScreen     from '../screens/HomeScreen';
@@ -16,7 +16,7 @@ import MarketScreen   from '../screens/MarketScreen';
 import { colors, typography } from '../theme';
 
 const Tab   = createBottomTabNavigator();
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 // Ícones temporários em texto até instalarmos uma biblioteca de ícones
 const icone = (label) => ({ focused }) => (
@@ -37,18 +37,16 @@ function TabNavigator() {
           paddingBottom: 8,
         },
         tabBarLabelStyle: {
-          fontFamily: typography.fontSans,
           fontSize: typography.sizes.xs,
-          color: colors.textSecondary,
         },
         tabBarActiveTintColor:   colors.primary,
         tabBarInactiveTintColor: colors.textDisabled,
       }}
     >
-      <Tab.Screen name="Início"    component={HomeScreen}    options={{ tabBarIcon: icone('Início') }} />
-      <Tab.Screen name="Receitas"  component={RecipesScreen} options={{ tabBarIcon: icone('Receitas') }} />
-      <Tab.Screen name="Lista"     component={ListScreen}    options={{ tabBarIcon: icone('Lista') }} />
-      <Tab.Screen name="Perfil"    component={ProfileScreen} options={{ tabBarIcon: icone('Perfil') }} />
+      <Tab.Screen name="Início"   component={HomeScreen}    options={{ tabBarIcon: icone('Início') }} />
+      <Tab.Screen name="Receitas" component={RecipesScreen} options={{ tabBarIcon: icone('Receitas') }} />
+      <Tab.Screen name="Lista"    component={ListScreen}    options={{ tabBarIcon: icone('Lista') }} />
+      <Tab.Screen name="Perfil"   component={ProfileScreen} options={{ tabBarIcon: icone('Perfil') }} />
     </Tab.Navigator>
   );
 }
@@ -59,7 +57,7 @@ export default function Navigation() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* Tela principal com as abas */}
         <Stack.Screen name="Main" component={TabNavigator} />
-        {/* Modo Mercado abre por cima das abas, sem barra de navegação */}
+        {/* Modo Mercado abre por cima das abas, sem cabeçalho */}
         <Stack.Screen name="Mercado" component={MarketScreen} />
       </Stack.Navigator>
     </NavigationContainer>
