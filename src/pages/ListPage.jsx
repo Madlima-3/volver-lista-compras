@@ -16,6 +16,8 @@ export default function ListPage() {
   const [lista, setLista] = useState(null);
   const [itens, setItens] = useState([]);
   const [novoItem, setNovoItem] = useState('');
+  const [quantidade, setQuantidade] = useState('');
+  const [unidade, setUnidade] = useState('');
   const inputRef = useRef(null);
 
   // Lê a lista mais recente e seus itens do localStorage
@@ -37,10 +39,16 @@ export default function ListPage() {
 
   function handleAdicionar() {
     if (!novoItem.trim() || !lista) return;
-    adicionarItem(lista.id, { name: novoItem.trim() });
+    adicionarItem(lista.id, {
+      name: novoItem.trim(),
+      quantity: quantidade.trim() || null,
+      unit: unidade.trim() || null,
+    });
     setNovoItem('');
+    setQuantidade('');
+    setUnidade('');
     carregarDados();
-    // Mantém o foco no campo para adicionar vários itens seguidos
+    // Mantém o foco no campo de nome para adicionar vários itens seguidos
     inputRef.current?.focus();
   }
 
@@ -148,24 +156,44 @@ export default function ListPage() {
 
       {/* ── Campo para adicionar item ── */}
       <div style={styles.inputArea}>
+        {/* Linha 1: nome do item */}
         <input
           ref={inputRef}
           style={styles.input}
-          placeholder="Adicionar item..."
+          placeholder="Nome do item..."
           value={novoItem}
           onChange={(e) => setNovoItem(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
         />
-        <button
-          style={{
-            ...styles.botaoAdicionar,
-            opacity: novoItem.trim() ? 1 : 0.4,
-          }}
-          onClick={handleAdicionar}
-          disabled={!novoItem.trim()}
-        >
-          +
-        </button>
+        {/* Linha 2: quantidade, unidade e botão */}
+        <div style={styles.inputLinha2}>
+          <input
+            style={styles.inputQtd}
+            placeholder="Qtd"
+            type="number"
+            min="0"
+            value={quantidade}
+            onChange={(e) => setQuantidade(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
+          />
+          <input
+            style={styles.inputUnidade}
+            placeholder="Unidade"
+            value={unidade}
+            onChange={(e) => setUnidade(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
+          />
+          <button
+            style={{
+              ...styles.botaoAdicionar,
+              opacity: novoItem.trim() ? 1 : 0.4,
+            }}
+            onClick={handleAdicionar}
+            disabled={!novoItem.trim()}
+          >
+            +
+          </button>
+        </div>
       </div>
 
     </div>
@@ -274,12 +302,41 @@ const styles = {
   // ── Campo de adicionar ──
   inputArea: {
     display: 'flex',
+    flexDirection: 'column',
     gap: spacing.sm,
     padding: spacing.lg,
     backgroundColor: colors.surface,
     borderTop: `1px solid ${colors.border}`,
   },
   input: {
+    width: '100%',
+    border: `1.5px solid ${colors.border}`,
+    borderRadius: radius.full,
+    padding: `${spacing.md} ${spacing.lg}`,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    backgroundColor: colors.background,
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  inputLinha2: {
+    display: 'flex',
+    gap: spacing.sm,
+    alignItems: 'center',
+  },
+  inputQtd: {
+    width: '72px',
+    minWidth: '72px',
+    border: `1.5px solid ${colors.border}`,
+    borderRadius: radius.full,
+    padding: `${spacing.md} ${spacing.lg}`,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    backgroundColor: colors.background,
+    outline: 'none',
+    textAlign: 'center',
+  },
+  inputUnidade: {
     flex: 1,
     border: `1.5px solid ${colors.border}`,
     borderRadius: radius.full,
