@@ -10,6 +10,8 @@ import {
   ativarLista,
   duplicarLista,
   renomearLista,
+  deletarLista,
+  alternarFixacao,
   adicionarItem,
   marcarItem,
   deletarItem,
@@ -148,12 +150,14 @@ function ListaCard({ lista, itens, onClick }) {
   return (
     <button style={styles.card} onClick={onClick}>
 
-      {/* Linha de topo: badge + data (efetuadas) */}
+      {/* Linha de topo: badge + data/pin */}
       <div style={styles.cardTopo}>
         <span style={isAtiva ? styles.badgeAtiva : styles.badgeEfetuada}>
           {isAtiva ? '🟢 Ativa' : '✅ Efetuada'}
         </span>
-        {!isAtiva && <span style={styles.dataTexto}>{dataFormatada}</span>}
+        <span style={styles.dataTexto}>
+          {isAtiva && lista.pinned ? '📌 Fixada no Início' : (!isAtiva ? dataFormatada : '')}
+        </span>
       </div>
 
       {/* Nome */}
@@ -198,6 +202,7 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
   const [novoNome, setNovoNome] = useState(lista.name);
   const [modalDuplicar, setModalDuplicar] = useState(false);
   const [nomeDuplicar, setNomeDuplicar] = useState(`Cópia de ${lista.name}`);
+  const [confirmarExclusao, setConfirmarExclusao] = useState(false);
   const inputRef = useRef(null);
 
   const isAtiva = lista.status === 'ativa';
@@ -243,6 +248,17 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
     onFechar();
   }
 
+  function handleExcluir() {
+    deletarLista(lista.id);
+    onAtualizar();
+    onFechar();
+  }
+
+  function handleFixar() {
+    alternarFixacao(lista.id);
+    onAtualizar();
+  }
+
   return (
     <div style={styles.modalTela}>
 
@@ -270,9 +286,14 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
             )}
           </div>
         )}
+
+        {/* Botão excluir — sempre visível no canto direito do cabeçalho */}
+        <button style={styles.botaoExcluir} onClick={() => setConfirmarExclusao(true)}>
+          🗑️
+        </button>
       </div>
 
-      {/* ── Subtítulo com status e progresso ── */}
+      {/* ── Subtítulo com status, progresso e ações secundárias ── */}
       <div style={styles.modalSubheader}>
         <span style={isAtiva ? styles.badgeAtiva : styles.badgeEfetuada}>
           {isAtiva ? '🟢 Lista Ativa' : '✅ Lista Efetuada'}
@@ -287,6 +308,24 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
             <div style={{ ...styles.barraProgresso, width: `${progresso}%` }} />
           </div>
         )}
+
+        {/* Ações secundárias: duplicar e fixar (ativas) */}
+        <div style={styles.acoesSecundarias}>
+          <button style={styles.botaoAcaoSecundaria} onClick={() => setModalDuplicar(true)}>
+            📋 Duplicar
+          </button>
+          {isAtiva && (
+            <button
+              style={{
+                ...styles.botaoAcaoSecundaria,
+                ...(lista.pinned ? styles.botaoFixadoAtivo : {}),
+              }}
+              onClick={handleFixar}
+            >
+              {lista.pinned ? '📌 Fixada no Início' : '📌 Fixar no Início'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Lista de itens (rolável) ── */}
@@ -378,15 +417,12 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
         )}
       </div>
 
-      {/* ── Rodapé com botões de ação ── */}
+      {/* ── Rodapé com botões primários ── */}
       <div style={styles.modalRodape}>
         {isAtiva ? (
           <>
             <button style={styles.botaoEfetuar} onClick={handleEfetuar}>
               ✅ Efetuar
-            </button>
-            <button style={styles.botaoRodapeSecundario} onClick={() => setModalDuplicar(true)}>
-              📋 Duplicar
             </button>
             <button style={styles.botaoSalvar} onClick={onFechar}>
               Salvar
@@ -397,15 +433,22 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
             <button style={styles.botaoRodapeSecundario} onClick={handleReativar}>
               ↩️ Reativar
             </button>
-            <button style={styles.botaoRodapeSecundario} onClick={() => setModalDuplicar(true)}>
-              📋 Duplicar
-            </button>
             <button style={styles.botaoSalvar} onClick={onFechar}>
               Fechar
             </button>
           </>
         )}
       </div>
+
+      {/* Modal de confirmação de exclusão */}
+      {confirmarExclusao && (
+        <ModalConfirmacao
+          mensagem={`Excluir "${lista.name}"? Esta ação não pode ser desfeita.`}
+          textoBotao="Excluir"
+          onConfirmar={handleExcluir}
+          onCancelar={() => setConfirmarExclusao(false)}
+        />
+      )}
 
       {/* Modal de duplicar (sobreposto) */}
       {modalDuplicar && (
@@ -420,6 +463,24 @@ function ListaModal({ lista, itens, onFechar, onAtualizar }) {
         />
       )}
 
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Modal de confirmação (excluir, etc.)
+// ─────────────────────────────────────────────
+
+function ModalConfirmacao({ mensagem, textoBotao, onConfirmar, onCancelar }) {
+  return (
+    <div style={styles.overlay} onClick={onCancelar}>
+      <div style={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
+        <p style={styles.confirmacaoMensagem}>{mensagem}</p>
+        <div style={styles.sheetBotoes}>
+          <button style={styles.botaoCancelar} onClick={onCancelar}>Cancelar</button>
+          <button style={styles.botaoPerigo} onClick={onConfirmar}>{textoBotao}</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -576,6 +637,57 @@ const styles = {
     backgroundColor: colors.primary,
     borderRadius: radius.full,
     transition: 'width 0.3s ease',
+  },
+
+  // ── Ações secundárias no subheader ──
+  acoesSecundarias: {
+    display: 'flex',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+    marginTop: spacing.xs,
+  },
+  botaoAcaoSecundaria: {
+    backgroundColor: colors.borderMuted,
+    color: colors.textSecondary,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.sm} ${spacing.md}`,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  botaoFixadoAtivo: {
+    backgroundColor: colors.primaryPastel,
+    color: colors.primary,
+  },
+  botaoExcluir: {
+    background: 'none',
+    border: 'none',
+    fontSize: '18px',
+    cursor: 'pointer',
+    padding: spacing.xs,
+    lineHeight: 1,
+    marginLeft: 'auto',
+    flexShrink: 0,
+  },
+
+  // ── Confirmação de exclusão ──
+  confirmacaoMensagem: {
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    margin: 0,
+    lineHeight: '1.5',
+  },
+  botaoPerigo: {
+    flex: 1,
+    backgroundColor: '#C0392B',
+    color: colors.surface,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.lg} ${spacing['2xl']}`,
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    cursor: 'pointer',
   },
 
   // ── Modal fullscreen ──

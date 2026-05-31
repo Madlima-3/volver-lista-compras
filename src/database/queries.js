@@ -8,6 +8,7 @@ export function criarLista(nome) {
     id: db.proximoId(listas),
     name: nome,
     status: 'ativa',
+    pinned: false,
     is_template: 0,
     created_at: new Date().toISOString(),
     completed_at: null,
@@ -16,22 +17,37 @@ export function criarLista(nome) {
   return nova.id;
 }
 
-// Retrocompatibilidade: listas antigas sem status são tratadas como 'ativa'
+// Retrocompatibilidade: listas antigas sem status/pinned recebem valores padrão
 export function buscarListas() {
   return db.ler(db.KEYS.lists)
-    .map((l) => ({ ...l, status: l.status || 'ativa' }))
+    .map((l) => ({ ...l, status: l.status || 'ativa', pinned: l.pinned || false }))
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
-// Retorna a lista ativa mais recente (usada na HomePage)
+// Retorna a lista a exibir na HomePage:
+// prioridade para a fixada pelo usuário, senão a ativa mais recente
 export function buscarListaAtiva() {
-  return buscarListas().find((l) => l.status === 'ativa') || null;
+  const ativas = buscarListas().filter((l) => l.status === 'ativa');
+  return ativas.find((l) => l.pinned) || ativas[0] || null;
+}
+
+// Liga/desliga a fixação de uma lista na HomePage (somente uma pode estar fixada)
+export function alternarFixacao(listId) {
+  const listas = db.ler(db.KEYS.lists);
+  const jaFixada = listas.find((l) => l.id === listId)?.pinned;
+  const atualizadas = listas.map((l) => ({
+    ...l,
+    // se a lista já estava fixada, desfixa; caso contrário, fixa só esta e desfixa as demais
+    pinned: jaFixada ? false : l.id === listId,
+  }));
+  db.salvar(db.KEYS.lists, atualizadas);
 }
 
 export function salvarLista(listId) {
+  // Ao efetuar, remove a fixação pois listas efetuadas não aparecem no Início
   const listas = db.ler(db.KEYS.lists).map((l) =>
     l.id === listId
-      ? { ...l, status: 'efetuada', completed_at: new Date().toISOString() }
+      ? { ...l, status: 'efetuada', pinned: false, completed_at: new Date().toISOString() }
       : l
   );
   db.salvar(db.KEYS.lists, listas);
