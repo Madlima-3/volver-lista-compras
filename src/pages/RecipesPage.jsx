@@ -85,7 +85,13 @@ export default function RecipesPage() {
       setErro(null);
       buscarReceitas(busca)
         .then((res) => { setResultados(res); setCarregando(false); })
-        .catch(() => { setErro('Não foi possível buscar. Verifique sua conexão.'); setCarregando(false); });
+        .catch((e) => {
+          const msg = e.message?.includes('não configurada')
+            ? 'Chave da API não configurada. Contate o suporte.'
+            : `Não foi possível buscar. ${e.message || 'Verifique sua conexão.'}`;
+          setErro(msg);
+          setCarregando(false);
+        });
     }, 600);
     return () => clearTimeout(timerRef.current);
   }, [busca]);

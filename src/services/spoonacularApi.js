@@ -4,15 +4,16 @@
 const API_KEY = import.meta.env.VITE_SPOONACULAR_KEY;
 const BASE_URL = 'https://api.spoonacular.com';
 
-// Busca receitas pelo nome (em português)
+// Busca receitas pelo nome
 export async function buscarReceitas(query) {
+  if (!API_KEY) throw new Error('Chave da API não configurada');
+
   const url =
     `${BASE_URL}/recipes/complexSearch` +
     `?query=${encodeURIComponent(query)}` +
-    `&language=pt` +
     `&addRecipeInformation=true` +
     `&fillIngredients=true` +
-    `&number=10` +
+    `&number=12` +
     `&apiKey=${API_KEY}`;
 
   const res = await fetch(url);
@@ -23,6 +24,8 @@ export async function buscarReceitas(query) {
 
 // Busca detalhes completos de uma receita (ingredientes, instruções)
 export async function buscarReceitaPorId(id) {
+  if (!API_KEY) throw new Error('Chave da API não configurada');
+
   const url =
     `${BASE_URL}/recipes/${id}/information` +
     `?includeNutrition=false` +
