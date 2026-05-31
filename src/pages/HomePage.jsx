@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { colors, fontSize, spacing, radius } from '../theme';
-import { buscarListas, buscarItensDaLista, criarLista } from '../database/queries';
+import { buscarListaAtiva, buscarItensDaLista, criarLista } from '../database/queries';
 
 // Retorna saudação baseada no horário atual
 function saudacao() {
@@ -24,13 +24,12 @@ export default function HomePage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [nomeLista, setNomeLista] = useState('');
 
-  // Carrega a lista mais recente ao abrir a página
+  // Carrega a lista ativa ao abrir a página
   useEffect(() => {
-    const listas = buscarListas();
-    if (listas.length > 0) {
-      const mais_recente = listas[0];
-      setListaAtiva(mais_recente);
-      setItens(buscarItensDaLista(mais_recente.id));
+    const ativa = buscarListaAtiva();
+    if (ativa) {
+      setListaAtiva(ativa);
+      setItens(buscarItensDaLista(ativa.id));
     }
   }, []);
 
