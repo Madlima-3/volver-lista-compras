@@ -1,0 +1,450 @@
+[
+  {
+    "id": "local_001", "source": "local", "title": "Frango Assado", "image": null,
+    "readyInMinutes": 80, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "frango inteiro", "quantity": "1", "unit": "kg" },
+      { "name": "alho", "quantity": "4", "unit": "dentes" },
+      { "name": "limão", "quantity": "2", "unit": "unidades" },
+      { "name": "azeite", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "alecrim", "quantity": "2", "unit": "ramos" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "pimenta do reino", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_002", "source": "local", "title": "Frango Grelhado", "image": null,
+    "readyInMinutes": 30, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "filé de frango", "quantity": "600", "unit": "g" },
+      { "name": "limão", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "azeite", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "pimenta do reino", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_003", "source": "local", "title": "Estrogonofe de Frango", "image": null,
+    "readyInMinutes": 40, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "filé de frango", "quantity": "500", "unit": "g" },
+      { "name": "creme de leite", "quantity": "1", "unit": "lata" },
+      { "name": "extrato de tomate", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "mostarda", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "champignon", "quantity": "1", "unit": "lata" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_004", "source": "local", "title": "Estrogonofe de Carne", "image": null,
+    "readyInMinutes": 40, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "carne bovina em tiras", "quantity": "500", "unit": "g" },
+      { "name": "creme de leite", "quantity": "1", "unit": "lata" },
+      { "name": "extrato de tomate", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "mostarda", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "champignon", "quantity": "1", "unit": "lata" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_005", "source": "local", "title": "Frango à Parmegiana", "image": null,
+    "readyInMinutes": 50, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "filé de frango", "quantity": "4", "unit": "unidades" },
+      { "name": "farinha de rosca", "quantity": "1", "unit": "xícara" },
+      { "name": "ovo", "quantity": "2", "unit": "unidades" },
+      { "name": "molho de tomate", "quantity": "2", "unit": "xícaras" },
+      { "name": "queijo mussarela", "quantity": "200", "unit": "g" },
+      { "name": "presunto", "quantity": "100", "unit": "g" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "óleo", "quantity": null, "unit": "para fritar" }
+    ]
+  },
+  {
+    "id": "local_006", "source": "local", "title": "Frango com Quiabo", "image": null,
+    "readyInMinutes": 60, "servings": 4, "cuisines": ["Mineira"],
+    "extendedIngredients": [
+      { "name": "frango em pedaços", "quantity": "1", "unit": "kg" },
+      { "name": "quiabo", "quantity": "500", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "tomate", "quantity": "2", "unit": "unidades" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "azeite", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "pimenta do reino", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_007", "source": "local", "title": "Sopa de Frango", "image": null,
+    "readyInMinutes": 50, "servings": 6, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "frango em pedaços", "quantity": "500", "unit": "g" },
+      { "name": "cenoura", "quantity": "2", "unit": "unidades" },
+      { "name": "batata", "quantity": "3", "unit": "unidades" },
+      { "name": "chuchu", "quantity": "1", "unit": "unidade" },
+      { "name": "macarrão tipo cabelo de anjo", "quantity": "100", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "cheiro verde", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_008", "source": "local", "title": "Bife Acebolado", "image": null,
+    "readyInMinutes": 25, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "bife de contra-filé", "quantity": "4", "unit": "unidades" },
+      { "name": "cebola", "quantity": "2", "unit": "unidades" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "pimenta do reino", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_009", "source": "local", "title": "Picanha Assada", "image": null,
+    "readyInMinutes": 60, "servings": 6, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "picanha", "quantity": "1", "unit": "kg" },
+      { "name": "sal grosso", "quantity": null, "unit": "a gosto" },
+      { "name": "alho", "quantity": "4", "unit": "dentes" },
+      { "name": "pimenta do reino", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_010", "source": "local", "title": "Carne Moída Refogada", "image": null,
+    "readyInMinutes": 30, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "carne moída", "quantity": "500", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "tomate", "quantity": "2", "unit": "unidades" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "extrato de tomate", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "azeite", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "cheiro verde", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_011", "source": "local", "title": "Feijoada", "image": null,
+    "readyInMinutes": 120, "servings": 8, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "feijão preto", "quantity": "500", "unit": "g" },
+      { "name": "costelinha de porco", "quantity": "300", "unit": "g" },
+      { "name": "linguiça calabresa", "quantity": "200", "unit": "g" },
+      { "name": "paio", "quantity": "200", "unit": "g" },
+      { "name": "bacon", "quantity": "150", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "4", "unit": "dentes" },
+      { "name": "folha de louro", "quantity": "2", "unit": "unidades" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_012", "source": "local", "title": "Feijão Preto", "image": null,
+    "readyInMinutes": 60, "servings": 6, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "feijão preto", "quantity": "500", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "bacon", "quantity": "100", "unit": "g" },
+      { "name": "linguiça calabresa", "quantity": "150", "unit": "g" },
+      { "name": "folha de louro", "quantity": "2", "unit": "unidades" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_013", "source": "local", "title": "Arroz Branco", "image": null,
+    "readyInMinutes": 25, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "arroz", "quantity": "2", "unit": "xícaras" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "sal", "quantity": "1", "unit": "colher de chá" },
+      { "name": "óleo", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "água", "quantity": "4", "unit": "xícaras" }
+    ]
+  },
+  {
+    "id": "local_014", "source": "local", "title": "Arroz Carreteiro", "image": null,
+    "readyInMinutes": 45, "servings": 6, "cuisines": ["Gaúcha"],
+    "extendedIngredients": [
+      { "name": "arroz", "quantity": "2", "unit": "xícaras" },
+      { "name": "carne seca", "quantity": "400", "unit": "g" },
+      { "name": "linguiça calabresa", "quantity": "200", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "tomate", "quantity": "2", "unit": "unidades" },
+      { "name": "cheiro verde", "quantity": null, "unit": "a gosto" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_015", "source": "local", "title": "Farofa de Bacon", "image": null,
+    "readyInMinutes": 20, "servings": 6, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "farinha de mandioca", "quantity": "2", "unit": "xícaras" },
+      { "name": "bacon", "quantity": "150", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "cheiro verde", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_016", "source": "local", "title": "Couve Refogada", "image": null,
+    "readyInMinutes": 15, "servings": 4, "cuisines": ["Mineira"],
+    "extendedIngredients": [
+      { "name": "couve", "quantity": "1", "unit": "maço" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "azeite", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_017", "source": "local", "title": "Macarrão ao Sugo", "image": null,
+    "readyInMinutes": 35, "servings": 4, "cuisines": ["Italiana"],
+    "extendedIngredients": [
+      { "name": "macarrão", "quantity": "500", "unit": "g" },
+      { "name": "tomate pelado", "quantity": "1", "unit": "lata" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "azeite", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "manjericão", "quantity": null, "unit": "a gosto" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_018", "source": "local", "title": "Macarrão à Bolonhesa", "image": null,
+    "readyInMinutes": 50, "servings": 4, "cuisines": ["Italiana"],
+    "extendedIngredients": [
+      { "name": "macarrão", "quantity": "500", "unit": "g" },
+      { "name": "carne moída", "quantity": "400", "unit": "g" },
+      { "name": "tomate pelado", "quantity": "1", "unit": "lata" },
+      { "name": "extrato de tomate", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "3", "unit": "dentes" },
+      { "name": "azeite", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_019", "source": "local", "title": "Lasanha de Carne", "image": null,
+    "readyInMinutes": 70, "servings": 6, "cuisines": ["Italiana"],
+    "extendedIngredients": [
+      { "name": "massa de lasanha", "quantity": "300", "unit": "g" },
+      { "name": "carne moída", "quantity": "500", "unit": "g" },
+      { "name": "molho de tomate", "quantity": "2", "unit": "xícaras" },
+      { "name": "molho bechamel", "quantity": "2", "unit": "xícaras" },
+      { "name": "queijo mussarela", "quantity": "300", "unit": "g" },
+      { "name": "queijo parmesão", "quantity": "100", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" }
+    ]
+  },
+  {
+    "id": "local_020", "source": "local", "title": "Risoto de Frango", "image": null,
+    "readyInMinutes": 50, "servings": 4, "cuisines": ["Italiana"],
+    "extendedIngredients": [
+      { "name": "arroz arbóreo", "quantity": "2", "unit": "xícaras" },
+      { "name": "filé de frango", "quantity": "400", "unit": "g" },
+      { "name": "caldo de frango", "quantity": "1", "unit": "litro" },
+      { "name": "vinho branco seco", "quantity": "1", "unit": "xícara" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "queijo parmesão", "quantity": "100", "unit": "g" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_021", "source": "local", "title": "Moqueca de Peixe", "image": null,
+    "readyInMinutes": 45, "servings": 4, "cuisines": ["Baiana"],
+    "extendedIngredients": [
+      { "name": "filé de peixe", "quantity": "800", "unit": "g" },
+      { "name": "leite de coco", "quantity": "1", "unit": "lata" },
+      { "name": "azeite de dendê", "quantity": "2", "unit": "colheres de sopa" },
+      { "name": "tomate", "quantity": "3", "unit": "unidades" },
+      { "name": "cebola", "quantity": "2", "unit": "unidades" },
+      { "name": "pimentão vermelho", "quantity": "1", "unit": "unidade" },
+      { "name": "coentro", "quantity": null, "unit": "a gosto" },
+      { "name": "limão", "quantity": "1", "unit": "unidade" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_022", "source": "local", "title": "Camarão ao Alho e Óleo", "image": null,
+    "readyInMinutes": 20, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "camarão limpo", "quantity": "500", "unit": "g" },
+      { "name": "alho", "quantity": "5", "unit": "dentes" },
+      { "name": "azeite", "quantity": "4", "unit": "colheres de sopa" },
+      { "name": "limão", "quantity": "1", "unit": "unidade" },
+      { "name": "salsinha", "quantity": null, "unit": "a gosto" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_023", "source": "local", "title": "Milanesa de Frango", "image": null,
+    "readyInMinutes": 30, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "filé de frango", "quantity": "4", "unit": "unidades" },
+      { "name": "farinha de rosca", "quantity": "1", "unit": "xícara" },
+      { "name": "farinha de trigo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "ovo", "quantity": "2", "unit": "unidades" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "óleo", "quantity": null, "unit": "para fritar" }
+    ]
+  },
+  {
+    "id": "local_024", "source": "local", "title": "Omelete", "image": null,
+    "readyInMinutes": 15, "servings": 2, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "ovo", "quantity": "4", "unit": "unidades" },
+      { "name": "queijo mussarela", "quantity": "50", "unit": "g" },
+      { "name": "presunto", "quantity": "50", "unit": "g" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "id": "local_025", "source": "local", "title": "Panqueca Recheada", "image": null,
+    "readyInMinutes": 45, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "farinha de trigo", "quantity": "1", "unit": "xícara" },
+      { "name": "ovo", "quantity": "2", "unit": "unidades" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "carne moída", "quantity": "300", "unit": "g" },
+      { "name": "molho de tomate", "quantity": "1", "unit": "xícara" },
+      { "name": "queijo mussarela", "quantity": "150", "unit": "g" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_026", "source": "local", "title": "Quibe Frito", "image": null,
+    "readyInMinutes": 60, "servings": 6, "cuisines": ["Árabe"],
+    "extendedIngredients": [
+      { "name": "carne moída", "quantity": "500", "unit": "g" },
+      { "name": "trigo para quibe", "quantity": "200", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "hortelã", "quantity": null, "unit": "a gosto" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "óleo", "quantity": null, "unit": "para fritar" }
+    ]
+  },
+  {
+    "id": "local_027", "source": "local", "title": "Pão de Queijo", "image": null,
+    "readyInMinutes": 40, "servings": 20, "cuisines": ["Mineira"],
+    "extendedIngredients": [
+      { "name": "polvilho azedo", "quantity": "500", "unit": "g" },
+      { "name": "queijo meia cura ralado", "quantity": "200", "unit": "g" },
+      { "name": "ovo", "quantity": "3", "unit": "unidades" },
+      { "name": "óleo", "quantity": "1/2", "unit": "xícara" },
+      { "name": "leite", "quantity": "1", "unit": "xícara" },
+      { "name": "sal", "quantity": "1", "unit": "colher de chá" }
+    ]
+  },
+  {
+    "id": "local_028", "source": "local", "title": "Brigadeiro", "image": null,
+    "readyInMinutes": 20, "servings": 25, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "chocolate em pó", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "chocolate granulado", "quantity": null, "unit": "para decorar" }
+    ]
+  },
+  {
+    "id": "local_029", "source": "local", "title": "Bolo de Cenoura com Cobertura de Chocolate", "image": null,
+    "readyInMinutes": 50, "servings": 10, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "cenoura", "quantity": "3", "unit": "unidades" },
+      { "name": "ovo", "quantity": "3", "unit": "unidades" },
+      { "name": "óleo", "quantity": "1", "unit": "xícara" },
+      { "name": "açúcar", "quantity": "2", "unit": "xícaras" },
+      { "name": "farinha de trigo", "quantity": "2", "unit": "xícaras" },
+      { "name": "fermento em pó", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "chocolate em pó", "quantity": "5", "unit": "colheres de sopa" },
+      { "name": "leite condensado", "quantity": "1", "unit": "lata" },
+      { "name": "manteiga", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "id": "local_030", "source": "local", "title": "Caldo Verde", "image": null,
+    "readyInMinutes": 40, "servings": 6, "cuisines": ["Portuguesa"],
+    "extendedIngredients": [
+      { "name": "batata", "quantity": "4", "unit": "unidades" },
+      { "name": "couve", "quantity": "1", "unit": "maço" },
+      { "name": "linguiça", "quantity": "200", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" },
+      { "name": "azeite", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_031", "source": "local", "title": "Mandioca Frita", "image": null,
+    "readyInMinutes": 30, "servings": 4, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "mandioca", "quantity": "500", "unit": "g" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" },
+      { "name": "óleo", "quantity": null, "unit": "para fritar" }
+    ]
+  },
+  {
+    "id": "local_032", "source": "local", "title": "Vitamina de Banana", "image": null,
+    "readyInMinutes": 5, "servings": 2, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "banana", "quantity": "2", "unit": "unidades" },
+      { "name": "leite", "quantity": "500", "unit": "ml" },
+      { "name": "mel", "quantity": "1", "unit": "colher de sopa" }
+    ]
+  },
+  {
+    "id": "local_033", "source": "local", "title": "Risoto de Camarão", "image": null,
+    "readyInMinutes": 50, "servings": 4, "cuisines": ["Italiana"],
+    "extendedIngredients": [
+      { "name": "arroz arbóreo", "quantity": "2", "unit": "xícaras" },
+      { "name": "camarão limpo", "quantity": "400", "unit": "g" },
+      { "name": "caldo de peixe", "quantity": "1", "unit": "litro" },
+      { "name": "vinho branco seco", "quantity": "1", "unit": "xícara" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "manteiga", "quantity": "3", "unit": "colheres de sopa" },
+      { "name": "queijo parmesão", "quantity": "100", "unit": "g" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  },
+  {
+    "id": "local_034", "source": "local", "title": "Yakisoba de Frango", "image": null,
+    "readyInMinutes": 35, "servings": 4, "cuisines": ["Japonesa"],
+    "extendedIngredients": [
+      { "name": "macarrão para yakisoba", "quantity": "300", "unit": "g" },
+      { "name": "filé de frango", "quantity": "400", "unit": "g" },
+      { "name": "repolho", "quantity": "1/4", "unit": "unidade" },
+      { "name": "cenoura", "quantity": "1", "unit": "unidade" },
+      { "name": "brócolis", "quantity": "1", "unit": "buquê" },
+      { "name": "molho shoyu", "quantity": "4", "unit": "colheres de sopa" },
+      { "name": "óleo de gergelim", "quantity": "1", "unit": "colher de sopa" },
+      { "name": "gengibre", "quantity": "1", "unit": "colher de chá" },
+      { "name": "alho", "quantity": "2", "unit": "dentes" }
+    ]
+  },
+  {
+    "id": "local_035", "source": "local", "title": "Coxinha de Frango", "image": null,
+    "readyInMinutes": 90, "servings": 20, "cuisines": ["Brasileira"],
+    "extendedIngredients": [
+      { "name": "frango cozido desfiado", "quantity": "300", "unit": "g" },
+      { "name": "farinha de trigo", "quantity": "500", "unit": "g" },
+      { "name": "caldo de frango", "quantity": "500", "unit": "ml" },
+      { "name": "cream cheese", "quantity": "100", "unit": "g" },
+      { "name": "cebola", "quantity": "1", "unit": "unidade" },
+      { "name": "farinha de rosca", "quantity": "1", "unit": "xícara" },
+      { "name": "ovo", "quantity": "2", "unit": "unidades" },
+      { "name": "óleo", "quantity": null, "unit": "para fritar" },
+      { "name": "sal", "quantity": null, "unit": "a gosto" }
+    ]
+  }
+]

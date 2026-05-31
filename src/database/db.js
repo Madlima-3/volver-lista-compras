@@ -7,6 +7,7 @@ const KEYS = {
   listItems:   'volver_list_items',
   recipes:     'volver_recipes',
   ingredients: 'volver_ingredients',
+  recipeCache: 'volver_recipe_cache',
 };
 
 function ler(chave) {

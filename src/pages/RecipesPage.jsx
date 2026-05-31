@@ -1,9 +1,10 @@
-// Página de receitas — busca na Spoonacular + coleção local salva pelo usuário.
+// Página de receitas — busca em cascata: base local → cache → Spoonacular → TheMealDB
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { colors, fontSize, spacing, radius } from '../theme';
-import { buscarReceitas, extrairIngredientes } from '../services/spoonacularApi';
+import { buscarReceitas } from '../services/buscaOrquestrador';
+import { extrairIngredientes } from '../services/spoonacularApi';
 import { criarLista, adicionarItem } from '../database/queries';
 import { db } from '../database/db';
 
@@ -86,10 +87,7 @@ export default function RecipesPage() {
       buscarReceitas(busca)
         .then((res) => { setResultados(res); setCarregando(false); })
         .catch((e) => {
-          const msg = e.message?.includes('não configurada')
-            ? 'Chave da API não configurada. Contate o suporte.'
-            : `Não foi possível buscar. ${e.message || 'Verifique sua conexão.'}`;
-          setErro(msg);
+          setErro(`Não foi possível buscar. ${e.message || 'Verifique sua conexão.'}`);
           setCarregando(false);
         });
     }, 600);
@@ -164,7 +162,7 @@ export default function RecipesPage() {
           <span style={styles.iconeBusca}>🔍</span>
           <input
             style={styles.inputBusca}
-            placeholder="Buscar receita em português..."
+            placeholder="Buscar receita (ex: frango, macarrão...)"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
@@ -313,22 +311,22 @@ function ReceitaCard({ receita, selecionada, salva, onToggle, onSalvar, onAbrirD
     || receita.usedIngredientCount + receita.missedIngredientCount
     || '?';
 
+  const badgeFonte = { local: '🇧🇷', mealdb: '🌐', spoonacular: '🔍' }[receita.source] || '';
+
   return (
     <div style={{ ...styles.card, ...(selecionada ? styles.cardSelecionado : {}) }}>
 
       {/* Foto + info */}
       <button style={styles.cardConteudo} onClick={onAbrirDetalhes}>
-        {receita.image && (
-          <img
-            src={receita.image}
-            alt={receita.title}
-            style={styles.foto}
-          />
+        {receita.image ? (
+          <img src={receita.image} alt={receita.title} style={styles.foto} />
+        ) : (
+          <div style={styles.fotoPlaceholder}>{badgeFonte || '🍽️'}</div>
         )}
         <div style={styles.cardTexto}>
           <p style={styles.cardNome}>{receita.title}</p>
           <p style={styles.cardMeta}>
-            {receita.cuisines?.[0] || receita.cuisine || ''}
+            {badgeFonte} {receita.cuisines?.[0] || ''}
             {receita.readyInMinutes ? ` · ${receita.readyInMinutes} min` : ''}
             {` · ${totalIngredientes} ingredientes`}
           </p>
@@ -519,6 +517,17 @@ const styles = {
     height: '60px',
     borderRadius: radius.md,
     objectFit: 'cover',
+    flexShrink: 0,
+  },
+  fotoPlaceholder: {
+    width: '60px',
+    height: '60px',
+    borderRadius: radius.md,
+    backgroundColor: colors.borderMuted,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '24px',
     flexShrink: 0,
   },
   cardTexto: {

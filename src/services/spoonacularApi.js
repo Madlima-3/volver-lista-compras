@@ -4,7 +4,7 @@
 const API_KEY = import.meta.env.VITE_SPOONACULAR_KEY;
 const BASE_URL = 'https://api.spoonacular.com';
 
-// Busca receitas pelo nome
+// Busca receitas pelo nome — sem fillIngredients para economizar pontos da API
 export async function buscarReceitas(query) {
   if (!API_KEY) throw new Error('Chave da API não configurada');
 
@@ -12,8 +12,7 @@ export async function buscarReceitas(query) {
     `${BASE_URL}/recipes/complexSearch` +
     `?query=${encodeURIComponent(query)}` +
     `&addRecipeInformation=true` +
-    `&fillIngredients=true` +
-    `&number=12` +
+    `&number=8` +
     `&apiKey=${API_KEY}`;
 
   const res = await fetch(url);
@@ -36,12 +35,12 @@ export async function buscarReceitaPorId(id) {
   return await res.json();
 }
 
-// Extrai a lista de ingredientes de uma receita já carregada
+// Extrai ingredientes — suporta formato Spoonacular (amount) e formato local/TheMealDB (quantity)
 export function extrairIngredientes(receita) {
   const ingredientes = receita.extendedIngredients || [];
   return ingredientes.map((ing) => ({
     name: ing.name || ing.originalName,
-    quantity: ing.amount ? String(ing.amount) : null,
+    quantity: ing.quantity || (ing.amount ? String(ing.amount) : null),
     unit: ing.unit || null,
   }));
 }
