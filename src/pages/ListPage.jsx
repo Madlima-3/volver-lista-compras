@@ -1,162 +1,256 @@
-// Página da lista de compras com checklist interativo.
+// Página de listas de compras — histórico e lista ativa.
 
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { colors, fontSize, spacing, radius } from '../theme';
 import {
   buscarListas,
   buscarItensDaLista,
+  criarLista,
+  salvarLista,
+  ativarLista,
+  duplicarLista,
+  renomearLista,
   adicionarItem,
   marcarItem,
   deletarItem,
 } from '../database/queries';
 
+// ─────────────────────────────────────────────
+// Componente principal
+// ─────────────────────────────────────────────
+
 export default function ListPage() {
-  const navigate = useNavigate();
-  const [lista, setLista] = useState(null);
-  const [itens, setItens] = useState([]);
+  const [listas, setListas] = useState([]);
+  const [itensMap, setItensMap] = useState({});
+  const [modalNova, setModalNova] = useState(false);
+  const [nomeNova, setNomeNova] = useState('');
+
+  function recarregar() {
+    const todas = buscarListas();
+    setListas(todas);
+    const mapa = {};
+    todas.forEach((l) => { mapa[l.id] = buscarItensDaLista(l.id); });
+    setItensMap(mapa);
+  }
+
+  useEffect(() => { recarregar(); }, []);
+
+  function handleCriarLista() {
+    if (!nomeNova.trim()) return;
+    criarLista(nomeNova.trim());
+    setNomeNova('');
+    setModalNova(false);
+    recarregar();
+  }
+
+  const ativas = listas.filter((l) => l.status === 'ativa');
+  const efetuadas = listas.filter((l) => l.status === 'efetuada');
+
+  return (
+    <div style={styles.container}>
+
+      {/* ── Cabeçalho da página ── */}
+      <div style={styles.pageHeader}>
+        <h2 style={styles.pageTitulo}>Minhas Listas</h2>
+        <button style={styles.botaoNova} onClick={() => setModalNova(true)}>+ Nova</button>
+      </div>
+
+      {/* ── Conteúdo ── */}
+      {listas.length === 0 ? (
+        <div style={styles.telaVazia}>
+          <span style={styles.emojiGrande}>🛒</span>
+          <p style={styles.vazioTitulo}>Nenhuma lista ainda</p>
+          <p style={styles.vazioDetalhe}>Crie sua primeira lista de compras.</p>
+          <button style={styles.botaoPrimario} onClick={() => setModalNova(true)}>
+            + Nova lista
+          </button>
+        </div>
+      ) : (
+        <div style={styles.conteudo}>
+
+          {/* ── Listas ativas ── */}
+          {ativas.length > 0 && (
+            <>
+              <p style={styles.secaoLabel}>Lista Ativa</p>
+              {ativas.map((lista) => (
+                <ListaAtivaCard
+                  key={lista.id}
+                  lista={lista}
+                  itens={itensMap[lista.id] || []}
+                  onAtualizar={recarregar}
+                />
+              ))}
+            </>
+          )}
+
+          {/* ── Histórico ── */}
+          {efetuadas.length > 0 && (
+            <>
+              <p style={styles.secaoLabel}>Histórico</p>
+              {efetuadas.map((lista) => (
+                <ListaEfetuadaCard
+                  key={lista.id}
+                  lista={lista}
+                  itens={itensMap[lista.id] || []}
+                  onAtualizar={recarregar}
+                />
+              ))}
+            </>
+          )}
+
+        </div>
+      )}
+
+      {/* ── Modal: nova lista ── */}
+      {modalNova && (
+        <ModalTexto
+          titulo="Nova lista"
+          placeholder="Ex: Compras da semana"
+          valor={nomeNova}
+          onChange={setNomeNova}
+          textoBotao="Criar"
+          onConfirmar={handleCriarLista}
+          onCancelar={() => { setModalNova(false); setNomeNova(''); }}
+        />
+      )}
+
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Card: lista ativa (com checklist e formulário)
+// ─────────────────────────────────────────────
+
+function ListaAtivaCard({ lista, itens, onAtualizar }) {
   const [novoItem, setNovoItem] = useState('');
   const [quantidade, setQuantidade] = useState('');
   const [unidade, setUnidade] = useState('');
+  const [editandoNome, setEditandoNome] = useState(false);
+  const [novoNome, setNovoNome] = useState(lista.name);
+  const [modalDuplicar, setModalDuplicar] = useState(false);
+  const [nomeDuplicar, setNomeDuplicar] = useState(`Cópia de ${lista.name}`);
   const inputRef = useRef(null);
 
-  // Lê a lista mais recente e seus itens do localStorage
-  function carregarDados() {
-    const listas = buscarListas();
-    if (listas.length > 0) {
-      const mais_recente = listas[0];
-      setLista(mais_recente);
-      setItens(buscarItensDaLista(mais_recente.id));
-    } else {
-      setLista(null);
-      setItens([]);
-    }
-  }
-
-  useEffect(() => {
-    carregarDados();
-  }, []);
+  const marcados = itens.filter((i) => i.checked === 1).length;
+  const total = itens.length;
+  const progresso = total > 0 ? (marcados / total) * 100 : 0;
 
   function handleAdicionar() {
-    if (!novoItem.trim() || !lista) return;
+    if (!novoItem.trim()) return;
     adicionarItem(lista.id, {
       name: novoItem.trim(),
       quantity: quantidade.trim() || null,
       unit: unidade.trim() || null,
     });
-    setNovoItem('');
-    setQuantidade('');
-    setUnidade('');
-    carregarDados();
-    // Mantém o foco no campo de nome para adicionar vários itens seguidos
+    setNovoItem(''); setQuantidade(''); setUnidade('');
+    onAtualizar();
     inputRef.current?.focus();
   }
 
-  function handleMarcar(itemId, estaMarcado) {
-    // Inverte o estado: se estava marcado, desmarca; se não, marca
-    marcarItem(itemId, !estaMarcado);
-    carregarDados();
+  function handleRenomear() {
+    if (!novoNome.trim()) return;
+    renomearLista(lista.id, novoNome.trim());
+    setEditandoNome(false);
+    onAtualizar();
   }
 
-  function handleDeletar(itemId) {
-    deletarItem(itemId);
-    carregarDados();
-  }
-
-  const itensMarcados = itens.filter((i) => i.checked === 1).length;
-  const totalItens = itens.length;
-  const progresso = totalItens > 0 ? (itensMarcados / totalItens) * 100 : 0;
-
-  // ── Estado: nenhuma lista no banco ──
-  if (!lista) {
-    return (
-      <div style={styles.telaVazia}>
-        <span style={styles.emojiGrande}>🛒</span>
-        <p style={styles.vazioTitulo}>Nenhuma lista criada</p>
-        <p style={styles.vazioDetalhe}>Crie uma lista na página inicial para começar.</p>
-        <button style={styles.botaoPrimario} onClick={() => navigate('/')}>
-          Ir para o Início
-        </button>
-      </div>
-    );
+  function handleDuplicar() {
+    duplicarLista(lista.id, nomeDuplicar.trim() || `Cópia de ${lista.name}`);
+    setModalDuplicar(false);
+    onAtualizar();
   }
 
   return (
-    <div style={styles.container}>
+    <div style={styles.card}>
 
-      {/* ── Cabeçalho ── */}
-      <div style={styles.header}>
-        <h2 style={styles.nomeLista}>{lista.name}</h2>
-        <p style={styles.textoProgresso}>
-          {totalItens === 0
-            ? 'Lista vazia'
-            : `${itensMarcados} de ${totalItens} ${totalItens === 1 ? 'item marcado' : 'itens marcados'}`}
-        </p>
-        {totalItens > 0 && (
-          <div style={styles.barraFundo}>
-            <div style={{ ...styles.barraProgresso, width: `${progresso}%` }} />
-          </div>
-        )}
+      {/* Badge de status */}
+      <span style={styles.badgeAtiva}>🟢 Lista Ativa</span>
+
+      {/* Nome da lista (com edição inline) */}
+      {editandoNome ? (
+        <div style={styles.editarNomeRow}>
+          <input
+            style={styles.inputNome}
+            value={novoNome}
+            onChange={(e) => setNovoNome(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleRenomear()}
+            autoFocus
+          />
+          <button style={styles.botaoIcone} onClick={handleRenomear}>✓</button>
+          <button style={styles.botaoIcone} onClick={() => { setEditandoNome(false); setNovoNome(lista.name); }}>✕</button>
+        </div>
+      ) : (
+        <div style={styles.nomeRow}>
+          <h3 style={styles.nomeLista}>{lista.name}</h3>
+          <button style={styles.botaoEditar} onClick={() => setEditandoNome(true)}>✏️</button>
+        </div>
+      )}
+
+      {/* Progresso */}
+      <p style={styles.textoProgresso}>
+        {total === 0
+          ? 'Lista vazia'
+          : `${marcados} de ${total} ${total === 1 ? 'item marcado' : 'itens marcados'}`}
+      </p>
+      {total > 0 && (
+        <div style={styles.barraFundo}>
+          <div style={{ ...styles.barraProgresso, width: `${progresso}%` }} />
+        </div>
+      )}
+
+      {/* Botões de ação */}
+      <div style={styles.acoesRow}>
+        <button style={styles.botaoSalvar} onClick={() => { salvarLista(lista.id); onAtualizar(); }}>
+          ✅ Salvar lista
+        </button>
+        <button style={styles.botaoSecundario} onClick={() => setModalDuplicar(true)}>
+          📋 Duplicar
+        </button>
       </div>
 
-      {/* ── Área de itens (rolável) ── */}
-      <div style={styles.listaArea}>
-        {itens.length === 0 ? (
-          <div style={styles.listaVazia}>
-            <span style={styles.emojiGrande}>📝</span>
-            <p style={styles.vazioDetalhe}>Adicione o primeiro item abaixo.</p>
-          </div>
-        ) : (
-          itens.map((item) => {
-            const marcado = item.checked === 1;
-            return (
-              <div key={item.id} style={styles.itemRow}>
+      <div style={styles.divisor} />
 
-                {/* Checkbox */}
-                <button
-                  style={{
-                    ...styles.checkbox,
-                    backgroundColor: marcado ? colors.primary : colors.surface,
-                    borderColor: marcado ? colors.primary : colors.border,
-                  }}
-                  onClick={() => handleMarcar(item.id, marcado)}
-                >
-                  {marcado && <span style={styles.checkmark}>✓</span>}
-                </button>
+      {/* Checklist */}
+      {itens.length === 0 ? (
+        <p style={styles.listaVaziaTexto}>Adicione o primeiro item abaixo.</p>
+      ) : (
+        itens.map((item) => {
+          const marcado = item.checked === 1;
+          return (
+            <div key={item.id} style={styles.itemRow}>
+              <button
+                style={{
+                  ...styles.checkbox,
+                  backgroundColor: marcado ? colors.primary : colors.surface,
+                  borderColor: marcado ? colors.primary : colors.border,
+                }}
+                onClick={() => { marcarItem(item.id, !marcado); onAtualizar(); }}
+              >
+                {marcado && <span style={styles.checkmark}>✓</span>}
+              </button>
+              <span style={{
+                ...styles.itemNome,
+                color: marcado ? colors.textMuted : colors.textPrimary,
+                textDecoration: marcado ? 'line-through' : 'none',
+              }}>
+                {item.name}
+                {item.quantity && (
+                  <span style={styles.itemQtd}>
+                    {' '}· {item.quantity}{item.unit ? ` ${item.unit}` : ''}
+                  </span>
+                )}
+              </span>
+              <button style={styles.botaoDeletar} onClick={() => { deletarItem(item.id); onAtualizar(); }}>
+                ×
+              </button>
+            </div>
+          );
+        })
+      )}
 
-                {/* Nome do item */}
-                <span
-                  style={{
-                    ...styles.itemNome,
-                    color: marcado ? colors.textMuted : colors.textPrimary,
-                    textDecoration: marcado ? 'line-through' : 'none',
-                  }}
-                >
-                  {item.name}
-                  {item.quantity && (
-                    <span style={styles.itemQtd}>
-                      {' '}· {item.quantity}{item.unit ? ` ${item.unit}` : ''}
-                    </span>
-                  )}
-                </span>
-
-                {/* Botão deletar */}
-                <button
-                  style={styles.botaoDeletar}
-                  onClick={() => handleDeletar(item.id)}
-                >
-                  ×
-                </button>
-
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* ── Campo para adicionar item ── */}
+      {/* Formulário de adicionar item */}
       <div style={styles.inputArea}>
-        {/* Linha 1: nome do item */}
         <input
           ref={inputRef}
           style={styles.input}
@@ -165,7 +259,6 @@ export default function ListPage() {
           onChange={(e) => setNovoItem(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
         />
-        {/* Linha 2: quantidade, unidade e botão */}
         <div style={styles.inputLinha2}>
           <input
             style={styles.inputQtd}
@@ -184,10 +277,7 @@ export default function ListPage() {
             onKeyDown={(e) => e.key === 'Enter' && handleAdicionar()}
           />
           <button
-            style={{
-              ...styles.botaoAdicionar,
-              opacity: novoItem.trim() ? 1 : 0.4,
-            }}
+            style={{ ...styles.botaoAdicionar, opacity: novoItem.trim() ? 1 : 0.4 }}
             onClick={handleAdicionar}
             disabled={!novoItem.trim()}
           >
@@ -196,9 +286,151 @@ export default function ListPage() {
         </div>
       </div>
 
+      {/* Modal duplicar */}
+      {modalDuplicar && (
+        <ModalTexto
+          titulo="Duplicar lista"
+          placeholder="Nome da nova lista"
+          valor={nomeDuplicar}
+          onChange={setNomeDuplicar}
+          textoBotao="Duplicar"
+          onConfirmar={handleDuplicar}
+          onCancelar={() => setModalDuplicar(false)}
+        />
+      )}
+
     </div>
   );
 }
+
+// ─────────────────────────────────────────────
+// Card: lista efetuada (colapsável)
+// ─────────────────────────────────────────────
+
+function ListaEfetuadaCard({ lista, itens, onAtualizar }) {
+  const [expandida, setExpandida] = useState(false);
+  const [modalDuplicar, setModalDuplicar] = useState(false);
+  const [nomeDuplicar, setNomeDuplicar] = useState(`Cópia de ${lista.name}`);
+
+  const total = itens.length;
+  const dataReferencia = lista.completed_at || lista.created_at;
+  const dataFormatada = new Date(dataReferencia).toLocaleDateString('pt-BR');
+
+  function handleDuplicar() {
+    duplicarLista(lista.id, nomeDuplicar.trim() || `Cópia de ${lista.name}`);
+    setModalDuplicar(false);
+    onAtualizar();
+  }
+
+  return (
+    <div style={{ ...styles.card, ...styles.cardEfetuada }}>
+
+      {/* Badge de status */}
+      <span style={styles.badgeEfetuada}>✅ Lista Efetuada</span>
+
+      {/* Nome e data */}
+      <div style={styles.nomeRow}>
+        <h3 style={{ ...styles.nomeLista, color: colors.textSecondary }}>{lista.name}</h3>
+        <span style={styles.dataTexto}>{dataFormatada}</span>
+      </div>
+
+      <p style={styles.textoProgresso}>
+        {total} {total === 1 ? 'item' : 'itens'}
+      </p>
+
+      {/* Ações */}
+      <div style={styles.acoesRow}>
+        <button style={styles.botaoSalvar} onClick={() => setModalDuplicar(true)}>
+          📋 Duplicar
+        </button>
+        <button style={styles.botaoSecundario} onClick={() => { ativarLista(lista.id); onAtualizar(); }}>
+          ↩️ Reativar
+        </button>
+        {total > 0 && (
+          <button style={styles.botaoExpandir} onClick={() => setExpandida(!expandida)}>
+            {expandida ? '▲' : '▼'} Itens
+          </button>
+        )}
+      </div>
+
+      {/* Itens expandidos (somente leitura) */}
+      {expandida && (
+        <>
+          <div style={styles.divisor} />
+          {itens.map((item) => (
+            <div key={item.id} style={{ ...styles.itemRow, opacity: 0.65 }}>
+              <span style={styles.checkboxLeitura}>
+                {item.checked ? '✓' : '○'}
+              </span>
+              <span style={{
+                ...styles.itemNome,
+                color: colors.textSecondary,
+                textDecoration: item.checked ? 'line-through' : 'none',
+              }}>
+                {item.name}
+                {item.quantity && (
+                  <span style={styles.itemQtd}>
+                    {' '}· {item.quantity}{item.unit ? ` ${item.unit}` : ''}
+                  </span>
+                )}
+              </span>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Modal duplicar */}
+      {modalDuplicar && (
+        <ModalTexto
+          titulo="Duplicar lista"
+          placeholder="Nome da nova lista"
+          valor={nomeDuplicar}
+          onChange={setNomeDuplicar}
+          textoBotao="Duplicar"
+          onConfirmar={handleDuplicar}
+          onCancelar={() => setModalDuplicar(false)}
+        />
+      )}
+
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Modal reutilizável com campo de texto
+// ─────────────────────────────────────────────
+
+function ModalTexto({ titulo, placeholder, valor, onChange, textoBotao, onConfirmar, onCancelar }) {
+  return (
+    <div style={styles.overlay} onClick={onCancelar}>
+      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <h2 style={styles.modalTitulo}>{titulo}</h2>
+        <input
+          style={styles.inputModal}
+          placeholder={placeholder}
+          value={valor}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onConfirmar()}
+          autoFocus
+        />
+        <div style={styles.modalBotoes}>
+          <button style={styles.botaoCancelar} onClick={onCancelar}>Cancelar</button>
+          <button
+            style={{ ...styles.botaoPrimario, opacity: valor.trim() ? 1 : 0.5 }}
+            onClick={onConfirmar}
+            disabled={!valor.trim()}
+          >
+            {textoBotao}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Estilos
+// ─────────────────────────────────────────────
 
 const styles = {
   // ── Layout geral ──
@@ -207,24 +439,146 @@ const styles = {
     flexDirection: 'column',
     height: '100%',
     backgroundColor: colors.background,
+    overflowY: 'auto',
   },
-
-  // ── Cabeçalho ──
-  header: {
-    padding: `${spacing.xl} ${spacing.xl} ${spacing.lg}`,
+  pageHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: `${spacing.xl} ${spacing.xl} ${spacing.md}`,
     backgroundColor: colors.surface,
     borderBottom: `1px solid ${colors.border}`,
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
   },
-  nomeLista: {
+  pageTitulo: {
     fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.textPrimary,
     margin: 0,
   },
+  botaoNova: {
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.sm} ${spacing.lg}`,
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  conteudo: {
+    padding: spacing.lg,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+  },
+  secaoLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    margin: `${spacing.md} 0 ${spacing.sm}`,
+  },
+
+  // ── Cards ──
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+    boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+  },
+  cardEfetuada: {
+    backgroundColor: colors.borderMuted,
+  },
+
+  // ── Badges de status ──
+  badgeAtiva: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.primary,
+    backgroundColor: colors.primaryPastel,
+    borderRadius: radius.full,
+    padding: `2px ${spacing.sm}`,
+    alignSelf: 'flex-start',
+  },
+  badgeEfetuada: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    backgroundColor: colors.border,
+    borderRadius: radius.full,
+    padding: `2px ${spacing.sm}`,
+    alignSelf: 'flex-start',
+  },
+
+  // ── Nome da lista ──
+  nomeRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  nomeLista: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    margin: 0,
+    flex: 1,
+  },
+  botaoEditar: {
+    background: 'none',
+    border: 'none',
+    fontSize: '16px',
+    cursor: 'pointer',
+    padding: spacing.xs,
+    lineHeight: 1,
+  },
+  dataTexto: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+
+  // ── Edição inline do nome ──
+  editarNomeRow: {
+    display: 'flex',
+    gap: spacing.sm,
+    alignItems: 'center',
+  },
+  inputNome: {
+    flex: 1,
+    border: `1.5px solid ${colors.primary}`,
+    borderRadius: radius.md,
+    padding: `${spacing.sm} ${spacing.md}`,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    backgroundColor: colors.background,
+    outline: 'none',
+  },
+  botaoIcone: {
+    background: 'none',
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.sm,
+    width: '32px',
+    height: '32px',
+    cursor: 'pointer',
+    fontSize: fontSize.base,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+
+  // ── Progresso ──
   textoProgresso: {
     fontSize: fontSize.base,
     color: colors.textSecondary,
-    margin: `${spacing.xs} 0 ${spacing.sm}`,
+    margin: 0,
   },
   barraFundo: {
     width: '100%',
@@ -240,21 +594,66 @@ const styles = {
     transition: 'width 0.3s ease',
   },
 
-  // ── Lista de itens ──
-  listaArea: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: `${spacing.sm} 0`,
+  // ── Botões de ação ──
+  acoesRow: {
+    display: 'flex',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
   },
+  botaoSalvar: {
+    backgroundColor: colors.primaryPastel,
+    color: colors.primary,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.sm} ${spacing.md}`,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  botaoSecundario: {
+    backgroundColor: colors.borderMuted,
+    color: colors.textSecondary,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.sm} ${spacing.md}`,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  botaoExpandir: {
+    background: 'none',
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.full,
+    padding: `${spacing.sm} ${spacing.md}`,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    cursor: 'pointer',
+  },
+
+  // ── Divisor ──
+  divisor: {
+    borderTop: `1px solid ${colors.borderMuted}`,
+    margin: `${spacing.xs} 0`,
+  },
+
+  // ── Texto lista vazia ──
+  listaVaziaTexto: {
+    fontSize: fontSize.base,
+    color: colors.textMuted,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    padding: `${spacing.md} 0`,
+    margin: 0,
+  },
+
+  // ── Itens do checklist ──
   itemRow: {
     display: 'flex',
     alignItems: 'center',
     gap: spacing.md,
-    padding: `${spacing.md} ${spacing.xl}`,
+    padding: `${spacing.sm} 0`,
     borderBottom: `1px solid ${colors.borderMuted}`,
   },
-
-  // ── Checkbox ──
   checkbox: {
     width: '24px',
     height: '24px',
@@ -274,8 +673,16 @@ const styles = {
     fontWeight: '700',
     lineHeight: 1,
   },
-
-  // ── Texto do item ──
+  checkboxLeitura: {
+    width: '24px',
+    height: '24px',
+    minWidth: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: fontSize.base,
+    color: colors.textMuted,
+  },
   itemNome: {
     flex: 1,
     fontSize: fontSize.md,
@@ -285,8 +692,6 @@ const styles = {
     color: colors.textMuted,
     fontSize: fontSize.base,
   },
-
-  // ── Botão deletar ──
   botaoDeletar: {
     background: 'none',
     border: 'none',
@@ -299,14 +704,14 @@ const styles = {
     alignItems: 'center',
   },
 
-  // ── Campo de adicionar ──
+  // ── Formulário de adicionar item ──
   inputArea: {
     display: 'flex',
     flexDirection: 'column',
     gap: spacing.sm,
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderTop: `1px solid ${colors.border}`,
+    marginTop: spacing.sm,
+    paddingTop: spacing.md,
+    borderTop: `1px solid ${colors.borderMuted}`,
   },
   input: {
     width: '100%',
@@ -364,31 +769,81 @@ const styles = {
     transition: 'opacity 0.15s',
   },
 
-  // ── Estado vazio (sem lista) ──
+  // ── Modal ──
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    display: 'flex',
+    alignItems: 'flex-end',
+    zIndex: 100,
+  },
+  modal: {
+    backgroundColor: colors.surface,
+    borderRadius: `${radius.xl} ${radius.xl} 0 0`,
+    padding: spacing['2xl'],
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.lg,
+    boxShadow: '0 -4px 20px rgba(0,0,0,0.12)',
+  },
+  modalTitulo: {
+    fontSize: fontSize.xl,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    margin: 0,
+  },
+  inputModal: {
+    border: `1.5px solid ${colors.border}`,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    backgroundColor: colors.background,
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  modalBotoes: {
+    display: 'flex',
+    gap: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  botaoCancelar: {
+    flex: 1,
+    backgroundColor: colors.borderMuted,
+    color: colors.textSecondary,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.lg} ${spacing['2xl']}`,
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  botaoPrimario: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    border: 'none',
+    borderRadius: radius.full,
+    padding: `${spacing.lg} ${spacing['2xl']}`,
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+
+  // ── Tela vazia ──
   telaVazia: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
+    flex: 1,
     padding: spacing.xl,
     gap: spacing.md,
-    backgroundColor: colors.background,
   },
-
-  // ── Estado vazio (lista sem itens) ──
-  listaVazia: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: `${spacing['2xl']} ${spacing.xl}`,
-    gap: spacing.sm,
-  },
-
-  emojiGrande: {
-    fontSize: '48px',
-    lineHeight: 1,
-  },
+  emojiGrande: { fontSize: '48px', lineHeight: 1 },
   vazioTitulo: {
     fontSize: fontSize.lg,
     fontWeight: '600',
@@ -400,16 +855,5 @@ const styles = {
     color: colors.textSecondary,
     margin: 0,
     textAlign: 'center',
-  },
-  botaoPrimario: {
-    backgroundColor: colors.primary,
-    color: colors.surface,
-    border: 'none',
-    borderRadius: radius.full,
-    padding: `${spacing.lg} ${spacing['2xl']}`,
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: spacing.sm,
   },
 };
