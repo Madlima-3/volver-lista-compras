@@ -1,43 +1,53 @@
-// Funções de leitura e escrita no banco. Cada função faz uma coisa só.
+// Funções de leitura e escrita. Cada função faz uma coisa só.
 
-import { getBanco } from './db';
+import { db } from './db';
 
-// --- Listas ---
-
-export async function criarLista(nome) {
-  const db = getBanco();
-  const resultado = await db.runAsync('INSERT INTO lists (name) VALUES (?)', nome);
-  return resultado.lastInsertRowId;
+export function criarLista(nome) {
+  const listas = db.ler(db.KEYS.lists);
+  const nova = { id: db.proximoId(listas), name: nome, is_template: 0, created_at: new Date().toISOString() };
+  db.salvar(db.KEYS.lists, [...listas, nova]);
+  return nova.id;
 }
 
-export async function buscarListas() {
-  const db = getBanco();
-  return db.getAllAsync('SELECT * FROM lists ORDER BY created_at DESC');
+export function buscarListas() {
+  return db.ler(db.KEYS.lists).sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
-// --- Itens da lista ---
+export function deletarLista(listId) {
+  db.salvar(db.KEYS.lists, db.ler(db.KEYS.lists).filter((l) => l.id !== listId));
+  db.salvar(db.KEYS.listItems, db.ler(db.KEYS.listItems).filter((i) => i.list_id !== listId));
+}
 
-export async function adicionarItem(listId, item) {
-  const db = getBanco();
-  const { name, quantity = null, unit = null, category = null, origin = 'Manual' } = item;
-  const resultado = await db.runAsync(
-    'INSERT INTO list_items (list_id, name, quantity, unit, category, origin) VALUES (?, ?, ?, ?, ?, ?)',
-    listId, name, quantity, unit, category, origin
+export function adicionarItem(listId, item) {
+  const itens = db.ler(db.KEYS.listItems);
+  const novo = {
+    id: db.proximoId(itens),
+    list_id: listId,
+    name: item.name,
+    quantity: item.quantity || null,
+    unit: item.unit || null,
+    category: item.category || null,
+    origin: item.origin || 'Manual',
+    checked: 0,
+    created_at: new Date().toISOString(),
+  };
+  db.salvar(db.KEYS.listItems, [...itens, novo]);
+  return novo.id;
+}
+
+export function buscarItensDaLista(listId) {
+  return db.ler(db.KEYS.listItems)
+    .filter((i) => i.list_id === listId)
+    .sort((a, b) => (a.category || '').localeCompare(b.category || '') || a.name.localeCompare(b.name));
+}
+
+export function marcarItem(itemId, marcado) {
+  const itens = db.ler(db.KEYS.listItems).map((i) =>
+    i.id === itemId ? { ...i, checked: marcado ? 1 : 0 } : i
   );
-  return resultado.lastInsertRowId;
+  db.salvar(db.KEYS.listItems, itens);
 }
 
-export async function buscarItensDaLista(listId) {
-  const db = getBanco();
-  return db.getAllAsync('SELECT * FROM list_items WHERE list_id = ? ORDER BY category, name', listId);
-}
-
-export async function marcarItem(itemId, marcado) {
-  const db = getBanco();
-  await db.runAsync('UPDATE list_items SET checked = ? WHERE id = ?', marcado ? 1 : 0, itemId);
-}
-
-export async function deletarItem(itemId) {
-  const db = getBanco();
-  await db.runAsync('DELETE FROM list_items WHERE id = ?', itemId);
+export function deletarItem(itemId) {
+  db.salvar(db.KEYS.listItems, db.ler(db.KEYS.listItems).filter((i) => i.id !== itemId));
 }

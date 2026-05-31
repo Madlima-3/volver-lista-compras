@@ -14,7 +14,6 @@ export async function buscarReceitaPorId(id) {
   return data.meals?.[0] || null;
 }
 
-// Converte os campos strIngredient1..20 / strMeasure1..20 em um array
 export function extrairIngredientes(receita) {
   const ingredientes = [];
   for (let i = 1; i <= 20; i++) {
